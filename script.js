@@ -25,6 +25,8 @@
 					updown = oscMessage.args[0];
 					gravity = oscMessage.args[1];
 					sideways = oscMessage.args[2] - 150;
+
+					if(gravity > 1500) blink = true;
 					break;
 				case "/muse/elements/blink":
 					blink |= oscMessage.args[0] == 1;
@@ -48,7 +50,7 @@
 			ctx.fill();
 			ctx.closePath();
 
-			//blink = false;
+			blink = false;
 		}, 16);
 	};
 })();
