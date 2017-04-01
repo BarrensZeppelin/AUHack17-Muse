@@ -3,6 +3,14 @@
   "description": "My first Chrome App.",
   "version": "0.1",
   "manifest_version": 2,
+  "sockets": {
+    "udp": {
+      "bind": "*"
+    }
+  },
+  "permissions": [
+    "system.network"
+  ],
   "app": {
     "background": {
       "scripts": ["background.js"]

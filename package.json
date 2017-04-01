@@ -1,0 +1,7 @@
+{
+	"name": "AUHack17-Muse",
+	"version": "0.1.0",
+	"dependencies": {
+		"osc": "2.2.0"
+	}
+}
