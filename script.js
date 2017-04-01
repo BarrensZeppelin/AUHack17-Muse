@@ -3,9 +3,9 @@
 	window.onload = function() {
 		var sideCompensation = -115;
 		var updown, gravity, sideways = 0,
-			blink = false;
-		var obstacles = [],
-			obDelay = 0;
+			blinkValue = 0;
+		var obstacles,
+			obDelay;
 
 		var udpPort = new osc.UDPPort({
 			localAddress: "0.0.0.0",
@@ -15,41 +15,102 @@
 
 		var canvas = document.getElementById("cv");
 		var ctx = canvas.getContext('2d');
-		var playerX = 0;
-		var speed = 0;
-		var point = 0;
-		var lives = 3;
+		var playerX;
+		var speed;
+		var points;
+		var lives;
+		var ticks;
+
+		ctx.font = '40px sans';
+		ctx.fillStyle = 'black';
+		ctx.fillText('Connecting to Muse...', 100, 50);
 
 		udpPort.on("ready", function() {
 			console.log("ready");
+
 		});
 
+		var receivedSignal = false;
+		var lastJump = -Infinity;
+
 		udpPort.on("message", function(oscMessage, timeTag, info) {
+			if (!receivedSignal) {
+				startGame();
+				receivedSignal = true;
+			}
 			switch(oscMessage.address) {
 				case "/muse/acc":
 					updown = oscMessage.args[0];
 					gravity = oscMessage.args[1];
 					sideways = oscMessage.args[2] + sideCompensation;
 
-					if(gravity > 1500) blink = true;
+					if(gravity > 1500 && ticks - lastJump > 100) {
+						var osize = size();
+						//blinkValue = 100;
+						//playerX += (osize - size()) / 2;
+
+						/*
+						obstacles.forEach(function(ob) {
+							ob[1] -= 20;
+						});
+						obDelay += 12;
+						*/
+						obstacles.forEach(function(ob) {
+							ob[1] += 75;
+						});
+
+						lastJump = ticks;
+					}
 					break;
 				case "/muse/elements/blink":
-					blink |= oscMessage.args[0] == 1;
-					console.log(oscMessage.args[0]);
+					//blink |= oscMessage.args[0] == 1;
+					//console.log(oscMessage.args[0]);
 					break;
 			}
 		});
 
 		udpPort.open();
 
-		setInterval(function draw() {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
+		var requestId, intervalId;
 
+		function startGame() {
+			obstacles = [];
+			obDelay = 0;
+
+			playerX = 0;
+			speed = 0;
+			points = 0;
+			lives = 3;
+			ticks = 0;
+
+			requestId = requestAnimationFrame(draw);
+			intevalId = setInterval(tick, 16);
+		}
+
+		function stopGame() {
+			cancelAnimationFrame(requestId);
+			clearInterval(intevalId);
+
+			document.body.onclick = function() {
+				document.body.onclick = undefined;
+
+				startGame();
+			};
+		}
+
+		function size() {
+			var max = 50;
+			var min = 15;
+			return (max - min) * (100 - blinkValue) / 100 + min;
+		}
+
+		function tick() {
+			ticks++;
 			// Logic
 			if(--obDelay <= 0) {
 				obDelay = 12 - speed;
 				speed += 0.01;
-				obstacles.push([Math.random()*canvas.width, -30, Math.random()<0.2?0:1]);
+				obstacles.push([Math.random()*canvas.width, -30, Math.random()<0.4?0:1]);
 			}
 
 			playerX += sideways / 60;
@@ -59,25 +120,41 @@
 			obstacles.forEach(function(ob) {
 				ob[1] += 2;
 				if(playerX < ob[0] + 10 &&
-				  playerX + 50 > ob[0] &&
+				  playerX + size() > ob[0] &&
 				  510 < ob[1] + 30 &&
 				  50 + 510 > ob[1]) {
 				  ob[1] = canvas.height + 30;
 				  console.log("hit");
 				  if(ob[2] == 1){
 				  	lives--;
-				  	console.log("hit red, " + lives + " lives left.");}
+				  	console.log("hit red, " + lives + " lives left.");
+					if (lives == 0) {
+						stopGame();
+					}
+				  }
 				  else {
-				  	point += 10;
-				  	console.log("hit green: " + point + " points total.");}}
+				  	points += 10;
+				  	console.log("hit green: " + points + " pointss total.");}}
 			});
+
+			obstacles = obstacles.filter(function(ob){
+				return (ob[1] < canvas.height)});
+
+			if (blinkValue > 0) blinkValue--;
+		}
+
+		function draw() {
+			requestAnimationFrame(draw);
+
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 			// Draw
 			ctx.beginPath();
-			ctx.rect(playerX, 510, 50, 50);
-			ctx.fillStyle = blink ? "#00FF00" : "blue";
+			ctx.rect(playerX, 510, size(), 50);
+			ctx.fillStyle = blinkValue > 0 ? "#4C005C" : "blue";
 			ctx.fill();
 			ctx.closePath();
+
 
 			obstacles.forEach(function(ob) {
 				ctx.beginPath();
@@ -89,9 +166,11 @@
 				ctx.fill();
 				ctx.closePath();
 			});
-			obstacles = obstacles.filter(function(ob){
-				return (ob[1] < canvas.height)})
-			blink = false;
-		}, 16);
+
+			ctx.font = '20px sans';
+			ctx.fillStyle = 'black';
+			ctx.fillText('Lives: ' + lives, 10, 20);
+			ctx.fillText('Points: ' + points, 10, 40);
+		}
 	};
 })();
