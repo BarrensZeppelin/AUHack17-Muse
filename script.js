@@ -83,9 +83,9 @@
 				ctx.beginPath();
 				ctx.rect(ob[0], ob[1], 10, 30);
 				if(ob[2] == 1)
-					ctx.fillStyle = "red";
+					ctx.fillStyle = "#FF0010";
 				else
-					ctx.fillStyle = "green";
+					ctx.fillStyle = "#2BCE48";
 				ctx.fill();
 				ctx.closePath();
 			});
