@@ -1,6 +1,8 @@
 (function() {
 
 	window.onload = function() {
+		var hueUrl = "http://10.42.0.156/api/38a0fb262bbee024203659723e28149f/lights/1/state"
+
 		var sideCompensation = -115;
 		var updown, gravity, sideways = 0,
 			blinkValue = 0;
@@ -33,6 +35,19 @@
 		var receivedSignal = false;
 		var lastJump = -Infinity;
 
+		var oldState = true, changeReady = true;
+		function setHueState(state) {
+			oldState = state;
+			return $.ajax({
+				url: hueUrl,
+				type: "PUT",
+				data: '{"on": ' + state + '}',
+				dataType: "json"
+			});
+		}
+
+		setHueState(true);
+
 		udpPort.on("message", function(oscMessage, timeTag, info) {
 			if (!receivedSignal) {
 				startGame();
@@ -63,8 +78,19 @@
 					}
 					break;
 				case "/muse/elements/blink":
+					var newState = oscMessage.args[0] == 0;
+					if(newState != oldState && changeReady) {
+						changeReady = false;
+						setHueState(newState);
+						console.log(newState);
+
+						setTimeout(function() {changeReady = true;}, 1000);
+					}
 					//blink |= oscMessage.args[0] == 1;
 					//console.log(oscMessage.args[0]);
+					break;
+				case "/muse/elements/experimental/mellow":
+					console.log(oscMessage.args[0]);
 					break;
 			}
 		});
@@ -124,17 +150,19 @@
 				  510 < ob[1] + 30 &&
 				  50 + 510 > ob[1]) {
 				  ob[1] = canvas.height + 30;
-				  console.log("hit");
+				  //console.log("hit");
 				  if(ob[2] == 1){
 				  	lives--;
-				  	console.log("hit red, " + lives + " lives left.");
+				  	//console.log("hit red, " + lives + " lives left.");
 					if (lives == 0) {
 						stopGame();
 					}
 				  }
 				  else {
-				  	points += 10;
-				  	console.log("hit green: " + points + " pointss total.");}}
+					points += 10;
+					//console.log("hit green: " + points + " pointss total.");
+					}
+				}
 			});
 
 			obstacles = obstacles.filter(function(ob){
