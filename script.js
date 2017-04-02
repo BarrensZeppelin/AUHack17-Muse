@@ -37,11 +37,19 @@
 
 		var oldState = true, changeReady = true;
 		function setHueState(state) {
+			data = {
+				on: state
+			}
+
+			if(state) {
+				data['hue'] = Math.floor(Math.random() * 65535)
+			}
+
 			oldState = state;
 			return $.ajax({
 				url: hueUrl,
 				type: "PUT",
-				data: '{"on": ' + state + '}',
+				data: JSON.stringify(data),
 				dataType: "json"
 			});
 		}
