@@ -38,7 +38,8 @@
 		var oldState = true, changeReady = true;
 		function setHueState(state) {
 			data = {
-				on: state
+				on: state,
+				transitiontime: 0
 			}
 
 			if(state) {
