@@ -16,8 +16,8 @@
 		var canvas = document.getElementById("cv");
 		var ctx = canvas.getContext('2d');
 		var playerX;
-		var player_height = 90;
-		var player_width = 55;
+		var player_height = 55;
+		var player_width = 90;
 		var ob_height = 30;
 		var ob_width = 10;
 		var speed;
