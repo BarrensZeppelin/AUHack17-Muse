@@ -72,7 +72,7 @@
 					gravity = oscMessage.args[1];
 					sideways = oscMessage.args[2] + sideCompensation;
 
-					if(gravity > 1500 && ticks - lastJump > 100) {
+					if(gravity > 1400 && ticks - lastJump > 100) {
 						var osize = size();
 						//blinkValue = 100;
 						//playerX += (osize - size()) / 2;
@@ -95,15 +95,15 @@
 					if(newState != oldState && changeReady) {
 						changeReady = false;
 						setHueState(newState);
-						console.log(newState);
+						//console.log(newState);
 
-						setTimeout(function() {changeReady = true;}, 1000);
+						setTimeout(function() {changeReady = true;}, 100);
 					}
 					//blink |= oscMessage.args[0] == 1;
 					//console.log(oscMessage.args[0]);
 					break;
 				case "/muse/elements/experimental/mellow":
-					console.log(oscMessage.args[0]);
+					//console.log(oscMessage.args[0]);
 					break;
 			}
 		});
@@ -119,8 +119,9 @@
 			playerX = 50;
 			speed = 0;
 			points = 0;
-			lives = 3;
+			lives = 10;
 			ticks = 0;
+			lastJump = -Infinity;
 
 			requestId = requestAnimationFrame(draw);
 			intevalId = setInterval(tick, 16);
@@ -184,6 +185,10 @@
 			if (blinkValue > 0) blinkValue--;
 		}
 
+		var beer_image = new Image();
+		var green_beer_image = new Image();
+		beer_image.src = 'beer1030.png';
+		green_beer_image.src = 'green_beer1030.jpg';
 		function draw() {
 			requestAnimationFrame(draw);
 
@@ -206,10 +211,6 @@
 
 			obstacles.forEach(function(ob) {
 				ctx.beginPath();
-				beer_image = new Image();
-				green_beer_image = new Image();
-				beer_image.src = 'beer1030.png';
-				green_beer_image.src = 'green_beer1030.jpg';
 				if(ob[2] == 1)
 				ctx.drawImage(beer_image, ob[0], ob[1]);
 				else
